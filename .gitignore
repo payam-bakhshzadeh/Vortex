@@ -1,0 +1,33 @@
+# نادیده گرفتن محیط مجازی
+venv/
+env/
+.venv/
+.env/
+
+# نادیده گرفتن فایل‌های پایتون کامپایل شده
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# نادیده گرفتن فایل‌های موقت و لاگ
+*.log
+*.tmp
+*.temp
+
+# نادیده گرفتن فایل‌های داده‌های بزرگ
+*.csv
+*.json
+*.xlsx
+*.vstm
+
+# نادیده گرفتن فایل‌های IDE
+.vscode/
+.idea/
+.DS_Store
+
+# نادیده گرفتن فایل‌های دیگر
+cached_data.pkl
+market_data.db
+har_and_cookies/
+#.gitignore
