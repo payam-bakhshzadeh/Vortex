@@ -1,3 +1,5 @@
+# gui/main_window.py
+
 from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
@@ -16,6 +18,12 @@ from .dialogs import DataRangeDialog
 
 class MainWindow(QMainWindow):
     def __init__(self, db_manager):
+        """
+        Initialize the MainWindow with a database manager.
+
+        Parameters:
+            db_manager (DatabaseManager): The database manager instance.
+        """
         super().__init__()
         self.db_manager = db_manager
         self.data_processor = DataProcessor(db_manager)
@@ -23,6 +31,9 @@ class MainWindow(QMainWindow):
         self.check_database_status()
 
     def setup_ui(self):
+        """
+        Set up the user interface for the MainWindow.
+        """
         self.setWindowTitle("Vortex Trading System")
         self.setGeometry(100, 100, 800, 600)
         self.setStyleSheet(StyleSheet.MAIN_WINDOW)
@@ -54,6 +65,9 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.status_label)
 
     def check_database_status(self):
+        """
+        Check the status of the database and update the status label accordingly.
+        """
         data = self.db_manager.get_market_data()
 
         if data.empty:
@@ -69,6 +83,9 @@ class MainWindow(QMainWindow):
         )
 
     def upload_csv(self):
+        """
+        Open a file dialog to upload a CSV file and handle duplicates if found.
+        """
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Select CSV File", "", "CSV Files (*.csv)"
         )
@@ -88,10 +105,22 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Error", f"Error processing file: {str(e)}")
 
     def handle_duplicates(self, file_path):
+        """
+        Handle duplicate data by showing a dialog and returning the user's response.
+
+        Parameters:
+            file_path (str): The path to the CSV file.
+
+        Returns:
+            bool: True if the user chose to proceed, False otherwise.
+        """
         dialog = DataRangeDialog(self)
         return dialog.exec_()
 
     def process_data(self):
+        """
+        Process and save the uploaded data.
+        """
         try:
             self.data_processor.process_and_save()
             QMessageBox.information(self, "Success", "Data processed successfully!")

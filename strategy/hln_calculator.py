@@ -1,3 +1,5 @@
+# strategy/hln_calculator.py
+
 import pandas as pd
 from typing import Tuple, List
 from utils.indicators import TechnicalIndicators
@@ -13,6 +15,17 @@ class HLNCalculator:
         z_score: float = 1.96,
         atr_multiplier: float = 0.5,
     ):
+        """
+        Initialize the HLNCalculator with the given data and parameters.
+
+        Parameters:
+            data (pd.DataFrame): The DataFrame containing market data.
+            tenkan_period (int): The period for Tenkan-sen (default is 9).
+            kijun_period (int): The period for Kijun-sen (default is 26).
+            senkou_b_period (int): The period for Senkou Span B (default is 52).
+            z_score (float): The z-score for statistical analysis (default is 1.96).
+            atr_multiplier (float): The ATR multiplier (default is 0.5).
+        """
         self.data = data
         self.validate_data(data)
         self.tenkan_period = tenkan_period
@@ -23,6 +36,15 @@ class HLNCalculator:
         self.indicators = TechnicalIndicators()
 
     def validate_data(self, data: pd.DataFrame):
+        """
+        Validate the input DataFrame to ensure it contains the required columns and is not empty.
+
+        Parameters:
+            data (pd.DataFrame): The DataFrame to validate.
+
+        Raises:
+            ValueError: If the DataFrame does not contain the required columns or is empty.
+        """
         required_columns = ["high", "low", "close"]
         if not all(col in data.columns for col in required_columns):
             raise ValueError(f"Data must contain columns: {required_columns}")
@@ -30,6 +52,9 @@ class HLNCalculator:
             raise ValueError("Empty dataset provided")
 
     def calculate_ichimoku(self) -> None:
+        """
+        Calculate Ichimoku components and add them to the DataFrame.
+        """
         components = self.indicators.calculate_ichimoku_components(
             self.data["high"],
             self.data["low"],
@@ -41,6 +66,12 @@ class HLNCalculator:
             self.data[key] = value
 
     def calculate_hln_lines(self) -> Tuple[List[float], List[float], List[int]]:
+        """
+        Calculate High-Low-Nadir (HLN) lines based on Ichimoku components and ATR.
+
+        Returns:
+            Tuple[List[float], List[float], List[int]]: Tuples containing HLN highs, lows, and timestamps.
+        """
         self.calculate_ichimoku()
 
         atr_9 = self.indicators.calculate_atr(

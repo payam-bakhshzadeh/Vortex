@@ -19,7 +19,7 @@ Vortex/
 │   └── hln_calculator.py
 ├── data/
 │   ├── __init__.py
-│   └── data_process.py
+│   └── data_processor.py
 ├── utils/
 │   ├── __init__.py
 │   ├── indicators.py

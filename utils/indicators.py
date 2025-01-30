@@ -1,3 +1,5 @@
+# utils/indicators.py
+
 import numpy as np
 import pandas as pd
 from typing import Tuple, Dict, Any
@@ -8,7 +10,18 @@ class TechnicalIndicators:
     def calculate_atr(
         high: pd.Series, low: pd.Series, close: pd.Series, period: int = 14
     ) -> pd.Series:
-        """Calculate Average True Range"""
+        """
+        Calculate the Average True Range (ATR).
+
+        Parameters:
+            high (pd.Series): High prices.
+            low (pd.Series): Low prices.
+            close (pd.Series): Close prices.
+            period (int): The period for ATR calculation (default is 14).
+
+        Returns:
+            pd.Series: ATR values.
+        """
         tr1 = high - low
         tr2 = abs(high - close.shift())
         tr3 = abs(low - close.shift())
@@ -23,7 +36,19 @@ class TechnicalIndicators:
         kijun_period: int = 26,
         senkou_b_period: int = 52,
     ) -> Dict[str, pd.Series]:
-        """Calculate all Ichimoku components"""
+        """
+        Calculate all Ichimoku components.
+
+        Parameters:
+            high (pd.Series): High prices.
+            low (pd.Series): Low prices.
+            tenkan_period (int): The period for Tenkan-sen (default is 9).
+            kijun_period (int): The period for Kijun-sen (default is 26).
+            senkou_b_period (int): The period for Senkou Span B (default is 52).
+
+        Returns:
+            Dict[str, pd.Series]: Dictionary containing Tenkan-sen, Kijun-sen, Senkou Span A, and Senkou Span B.
+        """
         tenkan = (
             high.rolling(window=tenkan_period).max()
             + low.rolling(window=tenkan_period).min()
@@ -47,11 +72,28 @@ class TechnicalIndicators:
 
     @staticmethod
     def detect_direction_change(series: pd.Series) -> pd.Series:
-        """Detect direction changes in a series"""
+        """
+        Detect direction changes in a series.
+
+        Parameters:
+            series (pd.Series): The series to analyze.
+
+        Returns:
+            pd.Series: Boolean series indicating direction changes.
+        """
         diff = series.diff()
         return (diff * diff.shift(1)) < 0
 
     @staticmethod
     def detect_flat_state(series: pd.Series, threshold: float = 0.0001) -> pd.Series:
-        """Detect flat states in a series"""
+        """
+        Detect flat states in a series.
+
+        Parameters:
+            series (pd.Series): The series to analyze.
+            threshold (float): The threshold for detecting flat states (default is 0.0001).
+
+        Returns:
+            pd.Series: Boolean series indicating flat states.
+        """
         return abs(series.diff()) < threshold
