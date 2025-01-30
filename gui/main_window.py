@@ -50,12 +50,6 @@ class MainWindow(QMainWindow):
         self.upload_btn.setStyleSheet(StyleSheet.BUTTON)
         controls_layout.addWidget(self.upload_btn)
 
-        self.submit_btn = QPushButton("Submit")
-        self.submit_btn.clicked.connect(self.process_data)
-        self.submit_btn.setEnabled(False)
-        self.submit_btn.setStyleSheet(StyleSheet.BUTTON)
-        controls_layout.addWidget(self.submit_btn)
-
         main_layout.addLayout(controls_layout)
 
         # Status display
@@ -76,8 +70,8 @@ class MainWindow(QMainWindow):
             )
             return
 
-        start_date = data["datetime"].min().strftime("%Y-%m-%d %H:%M:%S")
-        end_date = data["datetime"].max().strftime("%Y-%m-%d %H:%M:%S")
+        start_date = data["date_time"].min().strftime("%Y-%m-%d %H:%M:%S")
+        end_date = data["date_time"].max().strftime("%Y-%m-%d %H:%M:%S")
         self.status_label.setText(
             f"Database Status: Market data available\nFrom: {start_date}\nTo: {end_date}"
         )
@@ -97,10 +91,10 @@ class MainWindow(QMainWindow):
                     response = self.handle_duplicates(file_path)
                     if response:
                         self.data_processor.set_file_path(file_path)
-                        self.submit_btn.setEnabled(True)
+                        self.process_data()
                 else:
                     self.data_processor.set_file_path(file_path)
-                    self.submit_btn.setEnabled(True)
+                    self.process_data()
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Error processing file: {str(e)}")
 
@@ -123,8 +117,13 @@ class MainWindow(QMainWindow):
         """
         try:
             self.data_processor.process_and_save()
-            QMessageBox.information(self, "Success", "Data processed successfully!")
-            self.submit_btn.setEnabled(False)
+            data = self.db_manager.get_market_data()
+            record_count = len(data)
+            QMessageBox.information(
+                self,
+                "Success",
+                f"Data processed successfully!\nRecords saved: {record_count}",
+            )
             self.check_database_status()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Error processing data: {str(e)}")
