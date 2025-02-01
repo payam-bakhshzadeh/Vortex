@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, MagicMock
 from PyQt5.QtWidgets import QApplication
 from gui.main_window import MainWindow
 from database.db_manager import DatabaseManager

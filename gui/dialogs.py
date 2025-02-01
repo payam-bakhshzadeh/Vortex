@@ -1,7 +1,6 @@
 # gui/dialogs.py
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QPushButton, QLabel, QDialogButtonBox
-from PyQt5.QtCore import Qt
 from .styles import StyleSheet
 
 

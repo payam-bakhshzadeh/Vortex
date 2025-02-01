@@ -4,7 +4,6 @@ import unittest
 import pandas as pd
 import numpy as np
 from strategy.hln_calculator import HLNCalculator
-from utils.indicators import TechnicalIndicators
 
 class TestHLNCalculator(unittest.TestCase):
     def setUp(self):
