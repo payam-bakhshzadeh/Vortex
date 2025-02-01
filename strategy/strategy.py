@@ -25,7 +25,8 @@ class VortexStrategy:
         self.hln_calculator = None
         self.indicators = TechnicalIndicators()
 
-    def validate_config(self, config: Dict[str, Any]):
+    @staticmethod
+    def validate_config(config: Dict[str, Any]):
         """
         Validate the configuration parameters.
 
