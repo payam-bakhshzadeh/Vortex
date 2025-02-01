@@ -35,7 +35,8 @@ class HLNCalculator:
         self.atr_multiplier = atr_multiplier
         self.indicators = TechnicalIndicators()
 
-    def validate_data(self, data: pd.DataFrame):
+    @staticmethod
+    def validate_data(data: pd.DataFrame):
         """
         Validate the input DataFrame to ensure it contains the required columns and is not empty.
 
