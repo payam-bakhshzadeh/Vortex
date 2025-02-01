@@ -6,12 +6,8 @@ import numpy as np
 from strategy.strategy import VortexStrategy
 from utils.indicators import TechnicalIndicators
 
-
 class TestVortexStrategy(unittest.TestCase):
     def setUp(self):
-        """
-        Set up the test environment with sample market data and initialize the VortexStrategy.
-        """
         # Create more realistic market data with price movements
         periods = 100
         base_price = 100
@@ -40,25 +36,17 @@ class TestVortexStrategy(unittest.TestCase):
         self.indicators = TechnicalIndicators()
 
     def test_indicator_calculations(self):
-        """
-        Test the calculation of ATR using the TechnicalIndicators class.
-        """
-        # Calculate ATR with sufficient data points
         atr = self.indicators.calculate_atr(
             self.test_data["high"],
             self.test_data["low"],
             self.test_data["close"],
             period=14,
         )
-        # Skip first 14 values due to rolling window
         atr = atr[14:]
         self.assertTrue(len(atr) > 0)
         self.assertTrue(all(~pd.isna(atr)))
 
     def test_hln_calculation(self):
-        """
-        Test the calculation of HLN lines using the VortexStrategy class.
-        """
         self.strategy.initialize(self.test_data)
         signals = self.strategy.calculate_signals()
 
@@ -76,24 +64,15 @@ class TestVortexStrategy(unittest.TestCase):
             )
 
     def test_strategy_initialization(self):
-        """
-        Test the initialization of the VortexStrategy with sample market data.
-        """
         self.strategy.initialize(self.test_data)
         self.assertIsNotNone(self.strategy.hln_calculator)
 
     def test_strategy_with_empty_data(self):
-        """
-        Test the VortexStrategy with empty market data to ensure it raises a ValueError.
-        """
         empty_data = pd.DataFrame()
         with self.assertRaises(ValueError):
             self.strategy.initialize(empty_data)
 
     def test_strategy_with_invalid_config(self):
-        """
-        Test the VortexStrategy with invalid configuration parameters to ensure it raises a ValueError.
-        """
         invalid_config = {
             "tenkan_period": -1,
             "kijun_period": 26,
@@ -103,7 +82,6 @@ class TestVortexStrategy(unittest.TestCase):
         }
         with self.assertRaises(ValueError):
             VortexStrategy(config=invalid_config)
-
 
 if __name__ == "__main__":
     unittest.main()
