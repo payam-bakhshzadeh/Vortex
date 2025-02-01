@@ -1,6 +1,5 @@
 import unittest
 from unittest.mock import patch, MagicMock
-import sqlite3
 import pandas as pd
 from database.db_manager import DatabaseManager
 
