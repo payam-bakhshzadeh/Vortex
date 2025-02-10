@@ -1,18 +1,16 @@
 # strategy/strategy.py
-
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from .hln_calculator import HLNCalculator
 from utils.indicators import TechnicalIndicators
-import pandas as pd  # اضافه شده
+import pandas as pd
 
 
 class VortexStrategy:
     def __init__(self, config: Dict[str, Any] = None):
         """
         Initialize the VortexStrategy with the given configuration.
-
         Parameters:
-            config (Dict[str, Any]): Configuration parameters for the strategy.
+        config (Dict[str, Any]): Configuration parameters for the strategy.
         """
         self.validate_config(config)
         self.config = config or {
@@ -28,12 +26,10 @@ class VortexStrategy:
     def validate_config(self, config: Dict[str, Any]):
         """
         Validate the configuration parameters.
-
         Parameters:
-            config (Dict[str, Any]): Configuration parameters to validate.
-
+        config (Dict[str, Any]): Configuration parameters to validate.
         Raises:
-            ValueError: If any period is not a positive number.
+        ValueError: If any period is not a positive number.
         """
         if config:
             for key in ["tenkan_period", "kijun_period", "senkou_b_period"]:
@@ -44,12 +40,10 @@ class VortexStrategy:
     def initialize(self, market_data: pd.DataFrame):
         """
         Initialize the strategy with market data.
-
         Parameters:
-            market_data (pd.DataFrame): The DataFrame containing market data.
-
+        market_data (pd.DataFrame): The DataFrame containing market data.
         Raises:
-            ValueError: If the market data is empty.
+        ValueError: If the market data is empty.
         """
         if market_data.empty:
             raise ValueError("Empty market data provided")
@@ -68,7 +62,7 @@ class VortexStrategy:
         Calculate trading signals based on the market data.
 
         Returns:
-            Dict[str, List[Any]]: A dictionary containing HLN highs, lows, and timestamps.
+            Dict[str, List[Any]]: A dictionary containing HLN points and timestamps.
 
         Raises:
             ValueError: If the strategy is not initialized with market data.
@@ -76,6 +70,6 @@ class VortexStrategy:
         if not self.hln_calculator:
             raise ValueError("Strategy not initialized with market data")
 
-        hln_highs, hln_lows, timestamps = self.hln_calculator.calculate_hln_lines()
+        hln_points, timestamps = self.hln_calculator.calculate_hln_lines()
 
-        return {"hln_highs": hln_highs, "hln_lows": hln_lows, "timestamps": timestamps}
+        return {"hln_points": hln_points, "timestamps": timestamps}
