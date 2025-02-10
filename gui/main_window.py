@@ -1,4 +1,3 @@
-# gui/main_window.py
 from PyQt5.QtWidgets import (
     QMainWindow,
     QPushButton,
@@ -30,7 +29,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.db_manager = db_manager
         self.data_processor = DataProcessor(db_manager)
-        self.file_handler = FileHandler("output.json")  # اضافه شده
+        self.file_handler = FileHandler("output.json")
         self.strategy = VortexStrategy()
         self.setup_ui()
         self.check_database_status()
@@ -156,12 +155,12 @@ class MainWindow(QMainWindow):
             self.strategy.initialize(market_data)
             signals = self.strategy.calculate_signals()
 
-            json_path = self.json_path_edit.text()
-            self.file_handler.write_json(signals, json_path)
+            json_directory = self.json_path_edit.text()
+            file_path = self.file_handler.write_json(signals, json_directory)
             QMessageBox.information(
                 self,
                 "Success",
-                f"JSON file created successfully at {json_path}",
+                f"JSON file created successfully at {file_path}",
             )
         except Exception as e:
             QMessageBox.critical(

@@ -19,7 +19,7 @@ class FileHandler:
         if config_path.exists():
             with config_path.open('r') as f:
                 config = json.load(f)
-                return self.ensure_json_extension(config.get("json_save_path", self.default_path))
+                return config.get("json_save_path", self.default_path)
         return self.default_path
 
     def save_last_path(self, path):
@@ -33,14 +33,20 @@ class FileHandler:
         with config_path.open('w') as f:
             json.dump(config, f, indent=4)
 
-    def write_json(self, data, path=None):
-        """Write data to a JSON file."""
-        if path is None:
-            path = self.current_path
+    def write_json(self, data, directory=None):
+        """Write data to a JSON file in the specified directory."""
+        if directory is None:
+            directory = self.current_path
         else:
-            path = self.ensure_json_extension(path)
-            self.current_path = path
-            self.save_last_path(path)
-        with Path(path).open('w') as f:
+            self.current_path = directory
+            self.save_last_path(directory)
+
+        directory_path = Path(directory)
+        if not directory_path.exists() or not directory_path.is_dir():
+            # Use current working directory if the specified directory is invalid
+            directory_path = Path.cwd()
+
+        file_path = directory_path / "MT4.json"
+        with file_path.open('w') as f:
             json.dump(data, f, indent=4)
-        return path
+        return str(file_path)
