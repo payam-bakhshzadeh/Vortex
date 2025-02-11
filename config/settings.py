@@ -5,6 +5,19 @@ TRADING_PARAMS = {
     "SENKOU_B_PERIOD": 52,
     "ATR_MULTIPLIER": 0.5,
     "Z_SCORE": 1.96,
+    "ICHIMOKU_SHIFT": 26,  # افزودن شیفت ایچی موکو
+    "CHIKOU_SHIFT": -26,   # افزودن شیفت چیکو اسپن
+}
+
+# Ichimoku Colors
+ICHIMOKU_COLORS = {
+    "TENKAN": "red",
+    "KIJUN": "blue",
+    "SENKOU_A": "yellow",
+    "SENKOU_B": "black",
+    "CHIKOU": "black",
+    "KOMU_ABOVE": "green",  # رنگ فضای بالای Komu
+    "KOMU_BELOW": "red"     # رنگ فضای پایین Komu
 }
 
 # Database Configuration
