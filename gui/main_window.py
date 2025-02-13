@@ -15,7 +15,7 @@ from .styles import StyleSheet
 from .dialogs import DataRangeDialog
 from utils.file_handler import FileHandler
 from database.db_manager import DatabaseManager
-from strategy.strategy import VortexStrategy
+from strategy.hln_calculator import HLNCalculator
 import pandas as pd
 
 
@@ -30,7 +30,6 @@ class MainWindow(QMainWindow):
         self.db_manager = db_manager
         self.data_processor = DataProcessor(db_manager)
         self.file_handler = FileHandler("output.json")
-        self.strategy = VortexStrategy()
         self.setup_ui()
         self.check_database_status()
 
@@ -152,11 +151,21 @@ class MainWindow(QMainWindow):
         """
         try:
             market_data = self.db_manager.get_market_data()
-            self.strategy.initialize(market_data)
-            signals = self.strategy.calculate_signals()
-
+            
+            # Initialize HLNCalculator with market data
+            hln_calculator = HLNCalculator(data=market_data)
+            
+            # Calculate HLN lines
+            hln_values, hln_timestamps = hln_calculator.calculate_hln_lines()
+            
+            # Prepare data for JSON output
+            hln_output = {
+                "hln_values": hln_values,
+                "hln_timestamps": hln_timestamps
+            }
+            
             json_directory = self.json_path_edit.text()
-            file_path = self.file_handler.write_json(signals, json_directory)
+            file_path = self.file_handler.write_json(hln_output, json_directory)
             QMessageBox.information(
                 self,
                 "Success",
