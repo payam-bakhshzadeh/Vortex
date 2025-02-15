@@ -69,7 +69,7 @@ class TechnicalIndicators:
         senkou_span_b = ((senkou_span_b_high + senkou_span_b_low) / 2).shift(ichimoku_shift)
 
         # محاسبه خط Chikou Span
-       * chikou_span = close.shift(chikou_shift)
+        chikou_span = close.shift(chikou_shift)
 
         # تنظیمات پر کردن فضای بین Senkou Span A و Senkou Span B
         fill_between = [
