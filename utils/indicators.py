@@ -53,6 +53,17 @@ class TechnicalIndicators:
         Returns:
             Dict[str, Any]: Dictionary containing Tenkan-sen, Kijun-sen, Senkou Span A, Senkou Span B, Chikou Span, and fill_between parameters.
         """
+        # بررسی نوع داده‌های ورودی
+        if not isinstance(high, pd.Series):
+            raise ValueError("High prices must be a pandas Series")
+        if not isinstance(low, pd.Series):
+            raise ValueError("Low prices must be a pandas Series")
+        if not isinstance(close, pd.Series):
+            raise ValueError("Close prices must be a pandas Series")
+        if not isinstance(chikou_shift, int):
+            raise ValueError("Chikou shift must be an integer")
+
+      
         # محاسبه خطوط Tenkan-sen و Kijun-sen
         tenkan_high = high.rolling(window=tenkan_period).max()
         tenkan_low = low.rolling(window=tenkan_period).min()
@@ -66,7 +77,8 @@ class TechnicalIndicators:
         senkou_span_a = ((tenkan + kijun) / 2).shift(ichimoku_shift)
         senkou_span_b_high = high.rolling(window=senkou_b_period).max()
         senkou_span_b_low = low.rolling(window=senkou_b_period).min()
-        senkou_span_b = ((senkou_span_b_high + senkou_span_b_low) / 2).shift(ichimoku_shift)
+        senkou_span_b = (
+            (senkou_span_b_high + senkou_span_b_low) / 2).shift(ichimoku_shift)
 
         # محاسبه خط Chikou Span
         chikou_span = close.shift(chikou_shift)
@@ -113,7 +125,7 @@ class TechnicalIndicators:
         """
         diff = series.diff()
         return (diff * diff.shift(1)) < 0
-    
+
     @staticmethod
     def detect_flat_state(series: pd.Series, threshold: float = 0.0001) -> pd.Series:
         """
