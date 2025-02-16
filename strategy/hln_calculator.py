@@ -1,41 +1,35 @@
-# strategy/hln_calculator.py
+import numpy as np
 import pandas as pd
 from typing import List, Tuple
 from utils.indicators import TechnicalIndicators
-
+from scipy.stats import norm
 
 class HLNCalculator:
     def __init__(
         self,
         data: pd.DataFrame,
         tenkan_period: int = 9,
-        kijun_period: int = 26,
-        senkou_b_period: int = 52,
-        z_score: float = 1.96,
-        atr_multiplier: float = 0.5,
+        confidence_level: float = 0.95,
     ):
         """
         Initialize the HLNCalculator with the given data and parameters.
+        
         Parameters:
         data (pd.DataFrame): The DataFrame containing market data.
         tenkan_period (int): The period for Tenkan-sen (default is 9).
-        kijun_period (int): The period for Kijun-sen (default is 26).
-        senkou_b_period (int): The period for Senkou Span B (default is 52).
-        z_score (float): The z-score for statistical analysis (default is 1.96).
-        atr_multiplier (float): The ATR multiplier (default is 0.5).
+        confidence_level (float): Confidence level for dynamic tolerance (default is 0.95).
         """
         self.data = data
         self.validate_data(data)
         self.tenkan_period = tenkan_period
-        self.kijun_period = kijun_period
-        self.senkou_b_period = senkou_b_period
-        self.z_score = z_score
-        self.atr_multiplier = atr_multiplier
+        self.confidence_level = confidence_level
         self.indicators = TechnicalIndicators()
-
-    def validate_data(self, data: pd.DataFrame):
+    
+    @staticmethod
+    def validate_data(data: pd.DataFrame):
         """
         Validate the input DataFrame to ensure it contains the required columns and is not empty.
+
         Parameters:
         data (pd.DataFrame): The DataFrame to validate.
         Raises:
@@ -47,82 +41,54 @@ class HLNCalculator:
         if data.empty:
             raise ValueError("Empty dataset provided")
 
-    def calculate_ichimoku(self) -> None:
-        """
-        Calculate Ichimoku components and add them to the DataFrame.
-        """
-        components = self.indicators.calculate_ichimoku_components(
-            self.data["high"],
-            self.data["low"],
-            self.tenkan_period,
-            self.kijun_period,
-            self.senkou_b_period,
-        )
-        for key, value in components.items():
-            self.data[key] = value
+    def detect_high_low_normal(self, period: int) -> Tuple[List[dict], List[dict]]:
+        # محاسبه تغییرات قیمت
+        self.data['Price_Change'] = self.data['close'].diff()
+        # محاسبه میانگین و انحراف معیار تغییرات قیمت
+        mean_change = self.data['Price_Change'].rolling(window=period).mean()
+        std_dev = self.data['Price_Change'].rolling(window=period).std()
+        
+        # محاسبه Z-score برای سطح اطمینان مشخص
+        z = norm.ppf(1 - (1 - self.confidence_level) / 2)  # دو طرفه
+        
+        # محاسبه تلرانس پویا
+        tolerance = z * std_dev
+        
+        highs = []
+        lows = []
+        last_high = None
+        last_low = None
+        
+        for i in range(len(self.data)):
+            # تشخیص High Normal
+            if last_low is not None and i - last_low['index'] <= period + tolerance[i]:
+                if self.data['high'][i] > last_low['value']:
+                    highs.append({'index': i, 'value': self.data['high'][i]})
+                    last_high = {'index': i, 'value': self.data['high'][i]}
+                    last_low = None
+            
+            # تشخیص Low Normal
+            if last_high is not None and i - last_high['index'] <= period + tolerance[i]:
+                if self.data['low'][i] < last_high['value']:
+                    lows.append({'index': i, 'value': self.data['low'][i]})
+                    last_low = {'index': i, 'value': self.data['low'][i]}
+                    last_high = None
+        
+        return highs, lows
 
     def calculate_hln_lines(self) -> Tuple[List[float], List[int]]:
         """
-        Calculate High-Low-Nadir (HLN) lines based on Ichimoku components and ATR.
+        Calculate High-Low-Normal (HLN) lines based on Ichimoku components and dynamic tolerance.
 
         Returns:
             Tuple[List[float], List[int]]: A tuple containing HLN points (highs and lows) and their timestamps.
         """
-        self.calculate_ichimoku()
+        tenkan_highs, tenkan_lows = self.detect_high_low_normal(period=self.tenkan_period)
 
-        # Calculate ATR for different periods
-        atr_9 = self.indicators.calculate_atr(
-            self.data["high"], self.data["low"], self.data["close"], self.tenkan_period
-        )
-        atr_26 = self.indicators.calculate_atr(
-            self.data["high"], self.data["low"], self.data["close"], self.kijun_period
-        )
-        atr_52 = self.indicators.calculate_atr(
-            self.data["high"], self.data["low"], self.data["close"], self.senkou_b_period
-        )
+        hln_points = tenkan_highs + tenkan_lows
+        hln_points = sorted(hln_points, key=lambda x: x['index'])
+        
+        hln_values = [point['value'] for point in hln_points]
+        hln_timestamps = [point['index'] for point in hln_points]
 
-        # Detect direction changes in Ichimoku components
-        major_points = pd.DataFrame(
-            {
-                "tenkan": self.indicators.detect_direction_change(self.data["tenkan_sen"]),
-                "kijun": self.indicators.detect_direction_change(self.data["kijun_sen"]),
-                "span_b": self.indicators.detect_direction_change(self.data["senkou_span_b"]),
-            }
-        )
-
-        hln_points = []  # List to store HLN points (highs and lows)
-        hln_timestamps = []  # List to store corresponding timestamps
-        # Track the type of the last point added (None, "high", or "low")
-        last_point_type = None
-
-        for idx in range(len(self.data)):
-            if major_points.iloc[idx].any():
-                price_high = self.data["high"].iloc[idx]
-                price_low = self.data["low"].iloc[idx]
-
-                # Calculate the minimum distance based on ATR
-                min_distance = max(
-                    self.atr_multiplier * atr_9.iloc[idx],
-                    self.atr_multiplier * atr_26.iloc[idx],
-                    self.atr_multiplier * atr_52.iloc[idx],
-                )
-
-                # Add a high point if it meets the distance requirement and alternates with lows
-                if (last_point_type != "high") and (
-                    len(hln_points) == 0 or abs(
-                        price_high - hln_points[-1]) > min_distance
-                ):
-                    hln_points.append(price_high)
-                    hln_timestamps.append(idx)
-                    last_point_type = "high"
-
-                # Add a low point if it meets the distance requirement and alternates with highs
-                elif (last_point_type != "low") and (
-                    len(hln_points) == 0 or abs(
-                        price_low - hln_points[-1]) > min_distance
-                ):
-                    hln_points.append(price_low)
-                    hln_timestamps.append(idx)
-                    last_point_type = "low"
-
-        return hln_points, hln_timestamps
+        return hln_values, hln_timestamps

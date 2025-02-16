@@ -1,4 +1,3 @@
-# temp/temp_chart.py
 import sys
 import os
 # Add the project root directory to sys.path
@@ -8,9 +7,8 @@ import pandas as pd
 import sqlite3
 import matplotlib.pyplot as plt
 import mplfinance as mpf
-from strategy.hln_calculator import HLNCalculator
-from config.settings import TRADING_PARAMS
-
+from utils.indicators import TechnicalIndicators
+from config.settings import TRADING_PARAMS, ICHIMOKU_COLORS
 
 # اتصال به دیتابیس
 def get_market_data():
@@ -23,21 +21,6 @@ def get_market_data():
 # دریافت داده‌ها
 market_data = get_market_data()
 
-# محاسبه HLN خطوط
-hln_calculator = HLNCalculator(
-    market_data,
-    tenkan_period=TRADING_PARAMS["TENKAN_PERIOD"],
-    kijun_period=TRADING_PARAMS["KIJUN_PERIOD"],
-    senkou_b_period=TRADING_PARAMS["SENKOU_B_PERIOD"],
-    z_score=TRADING_PARAMS["Z_SCORE"],
-    atr_multiplier=TRADING_PARAMS["ATR_MULTIPLIER"],
-)
-hln_points = hln_calculator.calculate_hln_lines()
-
-# تبدیل نقاط به فرمت مورد نیاز
-hln_highs = [(pd.Timestamp(market_data.iloc[idx]['date_time']).value, point) for idx, point in zip(hln_points[2], hln_points[0])]
-hln_lows = [(pd.Timestamp(market_data.iloc[idx]['date_time']).value, point) for idx, point in zip(hln_points[2], hln_points[1])]
-
 # ایجاد چارت کندل‌استیک
 market_data['date_time'] = pd.to_datetime(market_data['date_time'])
 market_data.set_index('date_time', inplace=True)
@@ -45,13 +28,28 @@ market_data.set_index('date_time', inplace=True)
 # افزودن سری کندل‌استیک
 ohlc = market_data[['open', 'high', 'low', 'close']]
 
-# افزودن خطوط Normal High و Normal Low
-hln_highs = pd.DataFrame(hln_highs, columns=['date_time', 'High']).set_index('date_time')
-hln_lows = pd.DataFrame(hln_lows, columns=['date_time', 'Low']).set_index('date_time')
+# محاسبات اندیکاتور Ichimoku
+indicators = TechnicalIndicators()
+ichimoku_components = indicators.calculate_ichimoku_components(
+    market_data['high'],
+    market_data['low'],
+    market_data['close'],
+    tenkan_period=TRADING_PARAMS["TENKAN_PERIOD"],
+    kijun_period=TRADING_PARAMS["KIJUN_PERIOD"],
+    senkou_b_period=TRADING_PARAMS["SENKOU_B_PERIOD"],
+    ichimoku_shift=TRADING_PARAMS["ICHIMOKU_SHIFT"],
+    chikou_shift=TRADING_PARAMS["CHIKOU_SHIFT"]
+)
 
-# نمایش چارت
-ap0 = [mpf.make_addplot(hln_highs['High'], color='g'),
-       mpf.make_addplot(hln_lows['Low'], color='r')]
+# افزودن خطوط Ichimoku به چارت
+ap0 = [
+    mpf.make_addplot(ichimoku_components['tenkan_sen'], color=ICHIMOKU_COLORS["TENKAN"]),
+    mpf.make_addplot(ichimoku_components['kijun_sen'], color=ICHIMOKU_COLORS["KIJUN"]),
+    mpf.make_addplot(ichimoku_components['senkou_span_a'], color=ICHIMOKU_COLORS["SENKOU_A"]),
+    mpf.make_addplot(ichimoku_components['senkou_span_b'], color=ICHIMOKU_COLORS["SENKOU_B"]),
+    mpf.make_addplot(ichimoku_components['chikou_span'], color=ICHIMOKU_COLORS["CHIKOU"]),
+]
 
-mpf.plot(ohlc, type='candle', style='charles', addplot=ap0, title='Candlestick Chart with HLN Lines', ylabel='Price')
+# نمایش چارت با پر کردن فضای بین Senkou Span A و Senkou Span B
+mpf.plot(ohlc, type='candle', style='charles', addplot=ap0, title='Candlestick Chart with Ichimoku', ylabel='Price', fill_between=ichimoku_components["fill_between"])
 plt.show()
