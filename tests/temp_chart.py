@@ -12,7 +12,7 @@ from config.settings import TRADING_PARAMS, ICHIMOKU_COLORS
 
 # اتصال به دیتابیس
 def get_market_data():
-    db_path = os.path.join(os.path.dirname(__file__), '../vortex.db')
+    db_path = "..\\vortex.db"
     query = "SELECT * FROM market_data ORDER BY date_time DESC LIMIT 1000"
     df = pd.read_sql(query, sqlite3.connect(db_path))
     df = df.sort_values(by="date_time")
