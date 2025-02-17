@@ -1,55 +1,53 @@
-# Vortex Project
-
-## Dependency Visualization
-
-### Using pydeps
-
-1. Install `pydeps`:
-    ```sh
-    pip install pydeps
-    ```
-
-2. Navigate to the project directory and generate the dependency graph:
-    ```sh
-    cd /e:/Pyton_3_12_8/My_Python_Projects/Vortex
-    pydeps .
-    ```
-
-### Using pyreverse
-
-1. Install `pylint`:
-    ```sh
-    pip install pylint
-    ```
-
-2. Install Graphviz:
-    ```sh
-    sudo apt-get install graphviz
-    ```
-    or on Windows:
-    ```sh
-    choco install graphviz
-    ```
-
-3. Ensure that each directory containing Python modules has an `__init__.py` file:
-    ```sh
-    touch /e:/Pyton_3_12_8/My_Python_Projects/Vortex/__init__.py
-    ```
-
-4. Navigate to the project directory and generate the class diagrams:
-    ```sh
-    cd /e:/Pyton_3_12_8/My_Python_Projects/Vortex
-    pyreverse -o png -p Vortex .
-    ```
-
-5. If you encounter the `SKIPPING ILLEGAL MODULE_NAME` error, try using the following command instead:
-    ```sh
-    pyreverse -o png -p Vortex -m y .
-    ```
-
-6. If the `png` format is not supported, try using `dot` or `pdf` format:
-    ```sh
-    pyreverse -o pdf -p Vortex .
-    ```
+#Vortex_Project_Structure
+___
+Vortex/
+├── main.py
+├── requirements.txt
+├── config/
+│   ├── __init__.py
+│   └── settings.py
+├── gui/
+│   ├── __init__.py
+│   ├── main_window.py
+│   ├── dialogs.py
+│   └── styles.py
+├── database/
+│   ├── __init__.py
+│   ├── db_manager.py
+│   └── models.py
+├── strategy/
+│   ├── __init__.py
+│   ├── strategy.py
+│   └── hln_calculator.py
+├── data/
+│   ├── __init__.py
+│   └── data_processor.py
+├── utils/
+│   ├── __init__.py
+│   ├── indicators.py
+│   ├── file_handler.py
+│   └── helpers.py
+├── api/
+│   ├── __init__.py
+│   ├── api_server.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_db_manager.py
+│   ├── test_data_processor.py
+│   ├── test_hln_calculator.py
+│   ├── test_strategy.py
+│   └── test_main_window.py
+└── docs/
+    ├── README.md
+    └── API.md
 
 
+This structure organizes your project into logical components:
+1.	config/ - Configuration settings
+2.	gui/ - User interface components
+3.	database/ - Data storage and management
+4.	strategy/ - Trading strategy implementation
+5.	data/ - Data processing and handling
+6.	utils/ - Utility functions and indicators
+7.	tests/ - Unit tests
+8.	docs/ - Documentation
